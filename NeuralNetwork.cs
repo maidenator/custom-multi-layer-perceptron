@@ -1,195 +1,201 @@
 using System;
 using System.IO;
 
-namespace Backprop {
-	public class NeuralNet {
-		private INeuron[] ineuron; //approximatelty 3072
-		private HNeuron[] hneuron; // approx 64
-		private ONeuron[] oneuron; //approx 10
+namespace Backpropagation {
+	/// <summary>
+	/// A feed-forward neural network with one input, one hidden, and one output layer.
+	/// The network is trained with backpropagation.
+	/// </summary>
+	public class NeuralNetwork {
+		private InputNeuron[] inputNeurons;
+		private HiddenNeuron[] hiddenNeurons;
+		private OutputNeuron[] outputNeurons;
 
-		private const double LRPOUT = 0.2; //learning rate for the the ouptput layer
-		private const double LRPIN = 0.15; // learning rate for the input layer
+		private const double OutputLearningRate = 0.2;
+		private const double InputLearningRate = 0.15;
 
-		private double[] errorComponent; // approx 10;
-		private double[] errorDerivative;
-		private double[] desiredout;
+		private double[] outputErrors;
+		private double[] outputErrorDerivatives;
+		private double[] desiredOutputs;
 
-		public NeuralNet() {
-			ineuron = new INeuron[3072];
-			hneuron = new HNeuron[64];
-			oneuron = new ONeuron[10];
-			desiredout = new double[10];
-			errorComponent = new double[10];
-			errorDerivative = new double[10];
-			createNeurons(ineuron.Length, hneuron.Length, oneuron.Length);
+		public NeuralNetwork() {
+			inputNeurons = new InputNeuron[3072];
+			hiddenNeurons = new HiddenNeuron[64];
+			outputNeurons = new OutputNeuron[10];
+			desiredOutputs = new double[10];
+			outputErrors = new double[10];
+			outputErrorDerivatives = new double[10];
+			CreateNeurons(inputNeurons.Length, hiddenNeurons.Length, outputNeurons.Length);
 		}
 
-		public NeuralNet(int input, int hidden, int output) {
-			ineuron = new INeuron[input];
-			hneuron = new HNeuron[hidden];
-			oneuron = new ONeuron[output];
+		public NeuralNetwork(int inputCount, int hiddenCount, int outputCount) {
+			inputNeurons = new InputNeuron[inputCount];
+			hiddenNeurons = new HiddenNeuron[hiddenCount];
+			outputNeurons = new OutputNeuron[outputCount];
 
-			errorComponent = new double[output];
-			errorDerivative = new double[output];
-			desiredout = new double[output];
-			createNeurons(ineuron.Length, hneuron.Length, oneuron.Length);
+			outputErrors = new double[outputCount];
+			outputErrorDerivatives = new double[outputCount];
+			desiredOutputs = new double[outputCount];
+			CreateNeurons(inputNeurons.Length, hiddenNeurons.Length, outputNeurons.Length);
 		}
 
-		public void createNeurons(int i, int h, int o) {
-			for (int x = 0; x < i; x++) {
-				ineuron[x] = new INeuron(x, h);
+		public void CreateNeurons(int inputCount, int hiddenCount, int outputCount) {
+			for (int inputIndex = 0; inputIndex < inputCount; inputIndex++) {
+				inputNeurons[inputIndex] = new InputNeuron(inputIndex, hiddenCount);
 			}
-			for (int x = 0; x < h; x++) {
-				hneuron[x] = new HNeuron(x, o);
+			for (int hiddenIndex = 0; hiddenIndex < hiddenCount; hiddenIndex++) {
+				hiddenNeurons[hiddenIndex] = new HiddenNeuron(hiddenIndex, outputCount);
 			}
-			for (int x = 0; x < o; x++) {
-				oneuron[x] = new ONeuron(x);
+			for (int outputIndex = 0; outputIndex < outputCount; outputIndex++) {
+				outputNeurons[outputIndex] = new OutputNeuron(outputIndex);
 			}
-
 		}
 
-		public double getOuputData(int pos) {
-			return oneuron[pos].getOActivation();
+		public double GetOutput(int outputIndex) {
+			return outputNeurons[outputIndex].GetActivation();
 		}
 
-		public void setInputs(int pos, double data) {
-			ineuron[pos].setInput(data);
+		public void SetInput(int inputIndex, double value) {
+			inputNeurons[inputIndex].SetInput(value);
 		}
 
-		public void setDesiredOutput(int pos, double data) {
-			desiredout[pos] = data;
+		public void SetDesiredOutput(int outputIndex, double value) {
+			desiredOutputs[outputIndex] = value;
 		}
 
-		public double sigmoid(double dat) {
-			if (dat >= 20.00) {
-				dat = 32;
+		// Apply the sigmoid activation function.
+		public double Sigmoid(double value) {
+			if (value >= 20.00) {
+				value = 32;
 			}
-			return (double)(1.0 / (1.0 + System.Math.Exp(-dat)));
+			return 1.0 / (1.0 + Math.Exp(-value));
 		}
 
-		// Calculate the diferent activations on the 2 neurons
-		public void calculateHA() {
-			for (int x = 0; x < hneuron.Length; x++) {
-				double summation = 0.0;
-				for (int y = 0; y < ineuron.Length; y++) {
-					summation += ineuron[y].getInput() * ineuron[y].getWeight(x);
+		// Calculate the activation of each hidden neuron.
+		public void CalculateHiddenActivations() {
+			for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++) {
+				double weightedSum = 0.0;
+				for (int inputIndex = 0; inputIndex < inputNeurons.Length; inputIndex++) {
+					weightedSum += inputNeurons[inputIndex].GetInput() * inputNeurons[inputIndex].GetWeight(hiddenIndex);
 				}
-				hneuron[x].setHactivation(sigmoid(summation + hneuron[x].getBias()));
+				hiddenNeurons[hiddenIndex].SetActivation(Sigmoid(weightedSum + hiddenNeurons[hiddenIndex].GetBias()));
 			}
 		}
 
-		// Calculate the differnent activations for the output layers
-		public void calculateOA() {
-			for (int x = 0; x < oneuron.Length; x++) {
-				double summation = 0.0;
-				for (int y = 0; y < hneuron.Length; y++) {
-					summation += hneuron[y].getHactivation() * hneuron[y].getWeight(x);
+		// Calculate the activation of each output neuron.
+		public void CalculateOutputActivations() {
+			for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++) {
+				double weightedSum = 0.0;
+				for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++) {
+					weightedSum += hiddenNeurons[hiddenIndex].GetActivation() * hiddenNeurons[hiddenIndex].GetWeight(outputIndex);
 				}
-				oneuron[x].setOActivation(sigmoid(summation + oneuron[x].getBias()));
-			}
-		// }
-
-		// Calculate the different EC on the the output layer
-		public void calculateEC() {
-			for (int x = 0; x < oneuron.Length; x++) {
-				errorComponent[x] = (desiredout[x]) - (oneuron[x].getOActivation());
+				outputNeurons[outputIndex].SetActivation(Sigmoid(weightedSum + outputNeurons[outputIndex].GetBias()));
 			}
 		}
 
-		// Calclulate the different derivatives on the output layer
-		public void calculateDER() {
-			for (int x = 0; x < oneuron.Length; x++) {
-				errorDerivative[x] = oneuron[x].getOActivation() * (1 - (oneuron[x].getOActivation())) * errorComponent[x];
+		// Calculate the error for each output neuron.
+		public void CalculateOutputErrors() {
+			for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++) {
+				outputErrors[outputIndex] = desiredOutputs[outputIndex] - outputNeurons[outputIndex].GetActivation();
 			}
 		}
 
-		// Training session
-		public void learn() {
-			this.run();
-			this.calculateEC();
-			this.calculateDER();
+		// Calculate the derivative of the error for each output neuron.
+		public void CalculateOutputErrorDerivatives() {
+			for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++) {
+				double activation = outputNeurons[outputIndex].GetActivation();
+				outputErrorDerivatives[outputIndex] = activation * (1 - activation) * outputErrors[outputIndex];
+			}
+		}
 
-			// Calculates the errors of every neuron in the 2 layer
-			for (int x = 0; x < hneuron.Length; x++)
-				hneuron[x].calculateErr(errorDerivative);
+		// Run one training step: a forward pass followed by backpropagation.
+		public void TrainStep() {
+			this.ForwardPass();
+			this.CalculateOutputErrors();
+			this.CalculateOutputErrorDerivatives();
 
-			// Change in the weights in the 2 to ouput
-			for (int x = 0; x < hneuron.Length; x++)
-				hneuron[x].setWeight(LRPOUT, errorDerivative);
+			// Calculate the error for each hidden neuron.
+			for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++)
+				hiddenNeurons[hiddenIndex].CalculateError(outputErrorDerivatives);
 
-			// Change the weights in the input to 2
-			for (int x = 0; x < ineuron.Length; x++) {
-				for (int y = 0; y < hneuron.Length; y++) {
-					ineuron[x].setWeight(y, hneuron[y].getErr(), LRPIN);
+			// Update the weights between the hidden and output layers.
+			for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++)
+				hiddenNeurons[hiddenIndex].UpdateWeights(OutputLearningRate, outputErrorDerivatives);
+
+			// Update the weights between the input and hidden layers.
+			for (int inputIndex = 0; inputIndex < inputNeurons.Length; inputIndex++) {
+				for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++) {
+					inputNeurons[inputIndex].UpdateWeight(hiddenIndex, hiddenNeurons[hiddenIndex].GetError(), InputLearningRate);
 				}
 			}
 
-			// Change in output neuron bias
-			for (int x = 0; x < oneuron.Length; x++)
-				oneuron[x].changeBias(LRPOUT, errorDerivative);
+			// Update the output neuron biases.
+			for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++)
+				outputNeurons[outputIndex].UpdateBias(OutputLearningRate, outputErrorDerivatives);
 
-			// Change in 2 neuron bias
-			for (int x = 0; x < hneuron.Length; x++)
-				hneuron[x].changeBias(LRPIN);
-
+			// Update the hidden neuron biases.
+			for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++)
+				hiddenNeurons[hiddenIndex].UpdateBias(InputLearningRate);
 		}
 
-		public void run() {
-			this.calculateHA();
-			this.calculateOA();
-			// Application phase
+		// Run the forward pass through the network.
+		public void ForwardPass() {
+			this.CalculateHiddenActivations();
+			this.CalculateOutputActivations();
 		}
 
-		// Session terminator
-		public bool countgood() {
-			bool result = true;
-			for (int x = 0; x < oneuron.Length; x++) {
-				if ((errorComponent[x] - errorDerivative[x]) != 0)
-					result = false;
+		// Return true when the network has converged.
+		public bool HasConverged() {
+			bool isConverged = true;
+			for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++) {
+				if ((outputErrors[outputIndex] - outputErrorDerivatives[outputIndex]) != 0)
+					isConverged = false;
 			}
-			return result;
+			return isConverged;
 		}
 
-		public void saveWeights(String path) {
-			using (StreamWriter sw = new StreamWriter(path)) {
-				for (int x = 0; x < ineuron.Length; x++) { //saving the weights of the input layer
-					for (int y = 0; y < hneuron.Length; y++)
-					sw.WriteLine(ineuron[x].getWeight(y));
-				}
-				for (int x = 0; x < hneuron.Length; x++) { //saving the wieghts of the hidden layer
-					for (int y = 0; y < oneuron.Length; y++) {
-						sw.WriteLine(hneuron[x].getWeight(y));
+		// Save all weights and biases to a file.
+		public void SaveWeights(string filePath) {
+			using (StreamWriter writer = new StreamWriter(filePath)) {
+				for (int inputIndex = 0; inputIndex < inputNeurons.Length; inputIndex++) {
+					for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++) {
+						writer.WriteLine(inputNeurons[inputIndex].GetWeight(hiddenIndex));
 					}
 				}
-				for (int x = 0; x < hneuron.Length; x++) { // saving hidden layer bias
-					sw.WriteLine(hneuron[x].getBias());
+				for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++) {
+					for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++) {
+						writer.WriteLine(hiddenNeurons[hiddenIndex].GetWeight(outputIndex));
+					}
 				}
-				for (int x = 0; x < oneuron.Length; x++) { // saving output layer bias
-					sw.WriteLine(oneuron[x].getBias());
+				for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++) {
+					writer.WriteLine(hiddenNeurons[hiddenIndex].GetBias());
 				}
-			}// End of streamwriter
+				for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++) {
+					writer.WriteLine(outputNeurons[outputIndex].GetBias());
+				}
+			}
 		}
 
-		// Load data
-		public void loadWeights(String path) {
-			using (StreamReader sr = new StreamReader(path)) {
-				for (int x = 0; x < ineuron.Length; x++) { //loading the weights of the input layer
-					for (int y = 0; y < hneuron.Length; y++) {
-						ineuron[x].setWeight(y, Convert.ToDouble(sr.ReadLine()));
+		// Load all weights and biases from a file.
+		public void LoadWeights(string filePath) {
+			using (StreamReader reader = new StreamReader(filePath)) {
+				for (int inputIndex = 0; inputIndex < inputNeurons.Length; inputIndex++) {
+					for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++) {
+						inputNeurons[inputIndex].SetWeight(hiddenIndex, Convert.ToDouble(reader.ReadLine()));
 					}
 				}
-				for (int x = 0; x < hneuron.Length; x++) { //loading the wieghts of the hidden layer
-					for (int y = 0; y < oneuron.Length; y++) {
-						hneuron[x].setWeight(y, Convert.ToDouble(sr.ReadLine()));
+				for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++) {
+					for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++) {
+						hiddenNeurons[hiddenIndex].SetWeight(outputIndex, Convert.ToDouble(reader.ReadLine()));
 					}
 				}
-				for (int x = 0; x < hneuron.Length; x++) { // loading hidden layer bias
-					hneuron[x].setBias(Convert.ToDouble(sr.ReadLine()));
+				for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++) {
+					hiddenNeurons[hiddenIndex].SetBias(Convert.ToDouble(reader.ReadLine()));
 				}
-				for (int x = 0; x < oneuron.Length; x++) { // loading output layer bias
-					oneuron[x].setBias(Convert.ToDouble(sr.ReadLine()));
+				for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++) {
+					outputNeurons[outputIndex].SetBias(Convert.ToDouble(reader.ReadLine()));
 				}
-			}// End of streamreader
+			}
 		}
-	}// End of neural net
+	}
 }

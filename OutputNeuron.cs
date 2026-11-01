@@ -1,65 +1,66 @@
 using System;
 
-namespace Backprop {
-	public class ONeuron {
+namespace Backpropagation {
+	/// <summary>
+	/// A neuron in the output layer. It stores an activation value, a bias,
+	/// and an identifier used to look up its error derivative.
+	/// </summary>
+	public class OutputNeuron {
 		private double bias;
-		private int idno;
-		private double OActivation;
-		static System.Random rand;
+		private int id;
+		private double activation;
+		private static Random random;
 
-		public ONeuron() {
-			bias = this.randomBias();
-			idno = 0;
-			OActivation = 0.0;
+		public OutputNeuron() {
+			bias = this.RandomBias();
+			id = 0;
+			activation = 0.0;
 		}
 
-		public ONeuron(int idnodata) {
+		public OutputNeuron(int id) {
 			bias = 0.01;
-			idno = idnodata;
-			OActivation = 0.0;
+			this.id = id;
+			activation = 0.0;
 		}
 
-		public void setIdno(int data) {
-			idno = data;
+		public void SetId(int id) {
+			this.id = id;
 		}
 
-		public int getIdno() {
-			return idno;
+		public int GetId() {
+			return id;
 		}
 
-		public void setOActivation(double data) {
-			OActivation = data;
+		public void SetActivation(double value) {
+			activation = value;
 		}
 
-		public double getOActivation() {
-			return OActivation;
+		public double GetActivation() {
+			return activation;
 		}
 
-		public double getBias() {
+		public double GetBias() {
 			return bias;
 		}
 
-		public void setBias(double dat) {
-			bias = dat;
+		public void SetBias(double value) {
+			bias = value;
 		}
 
-		public void changeBias(double lrpout, double[] der) {
-			bias += lrpout * der[idno];
+		// Update this neuron's bias using its error derivative.
+		public void UpdateBias(double learningRate, double[] outputErrorDerivatives) {
+			bias += learningRate * outputErrorDerivatives[id];
 		}
 
-		private double randomBias() {
-			if (rand == null) {
-				rand = new System.Random();
+		private double RandomBias() {
+			if (random == null) {
+				random = new Random();
 			}
 
-			int MaxLimit = +1000;
+			int maxLimit = 1000;
+			int minLimit = -1000;
 
-			int MinLimit = -1000;
-
-			double number = (double)(rand.Next(MinLimit, MaxLimit)) / 2000;
-
-			return number;
+			return (double)random.Next(minLimit, maxLimit) / 2000;
 		}
-	}// End of class ONeuron
-
+	}
 }

@@ -1,78 +1,75 @@
 using System;
 
-namespace Backprop {
-	public class INeuron {
-		private int idno;
+namespace Backpropagation {
+	/// <summary>
+	/// A neuron in the input layer. It stores one input value and the weights
+	/// that connect it to each hidden neuron.
+	/// </summary>
+	public class InputNeuron {
+		private double[] weights;
+		private int id;
 		private double input;
-		private double[] weights; // 64 2 neurons to be connected
-		private int wsize;
-		private int num;
-		static System.Random rand;
+		private static Random random;
 
-		public INeuron() {
-			idno = 0;
+		public InputNeuron() {
+			id = 0;
 			input = 0;
-			wsize = 64;
-			weights = new double[wsize];
-			this.setRandomWeights(wsize);
+			weights = new double[64];
+			this.RandomizeWeights();
 		}
 
-		public INeuron(int idnodata, int size) {
-			idno = idnodata;
+		public InputNeuron(int id, int weightCount) {
+			this.id = id;
 			input = 0;
-			wsize = size;
-			weights = new double[wsize];
-			this.setRandomWeights(wsize);
+			weights = new double[weightCount];
+			this.RandomizeWeights();
 		}
 
-		private double randomweight() {
-			if (rand == null) {
-				rand = new System.Random();
+		private double RandomWeight() {
+			if (random == null) {
+				random = new Random();
 			}
 
-			int MaxLimit = +1000;
+			int maxLimit = 1000;
+			int minLimit = -1000;
 
-			int MinLimit = -1000;
-
-			double number = (double)(rand.Next(MinLimit, MaxLimit)) / 2000;
-
-			return number;
+			return (double)random.Next(minLimit, maxLimit) / 2000;
 		}
 
-		public void setRandomWeights(int size) {
-			for (int x = 0; x < size; x++) {
-				weights[x] = this.randomweight();
+		public void RandomizeWeights() {
+			for (int weightIndex = 0; weightIndex < weights.Length; weightIndex++) {
+				weights[weightIndex] = this.RandomWeight();
 			}
-
 		}
 
-		public void setWeight(int hidno, double err, double lrpin) {
-			double errlrpin = err * lrpin;
-			weights[hidno] += (errlrpin * input);
+		// Update the weight between this input neuron and one hidden neuron.
+		public void UpdateWeight(int hiddenIndex, double error, double learningRate) {
+			double scaledError = error * learningRate;
+			weights[hiddenIndex] += scaledError * input;
 		}
 
-		public void setID(int no) {
-			idno = no;
+		public int GetId() {
+			return id;
 		}
 
-		public void setInput(double data) {
-			input = data;
+		public void SetId(int id) {
+			this.id = id;
 		}
 
-		public double getInput() {
+		public double GetInput() {
 			return input;
 		}
 
-		public double getWeight(int hidno) {
-			return weights[hidno];
+		public void SetInput(double value) {
+			input = value;
 		}
 
-		public int getID() {
-			return idno;
+		public double GetWeight(int hiddenIndex) {
+			return weights[hiddenIndex];
 		}
 
-		public void setWeight(int pos, double dat) {
-			weights[pos] = dat;
+		public void SetWeight(int weightIndex, double value) {
+			weights[weightIndex] = value;
 		}
-	}// end of class INEURON
+	}
 }

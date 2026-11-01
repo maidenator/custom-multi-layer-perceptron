@@ -1,116 +1,113 @@
 using System;
 
-namespace Backprop {
-	public class HNeuron {
-		private double[] weights;//there will be 10 for the input neurons
-		private int idno;
-		private int wsize;
-		private double hactivation;
+namespace Backpropagation {
+	/// <summary>
+	/// A neuron in the hidden layer. It stores an activation value, a bias,
+	/// an error, and the weights that connect it to each output neuron.
+	/// </summary>
+	public class HiddenNeuron {
+		private double[] weights;
+		private int id;
+		private double activation;
 		private double bias;
 		private double error;
-		static System.Random rand;
+		private static Random random;
 
-		public HNeuron() {
-			idno = 0;
-			hactivation = 0.0;
-			bias = this.randomweight();
+		public HiddenNeuron() {
+			id = 0;
+			activation = 0.0;
+			bias = this.RandomWeight();
 			error = 0.0;
-			wsize = 10;
 			weights = new double[10];
-			this.setRandomWeights(10);
+			this.RandomizeWeights();
 		}
 
-		public HNeuron(int idnodata, int size) {
-			idno = idnodata;
-			hactivation = 0.0;
+		public HiddenNeuron(int id, int weightCount) {
+			this.id = id;
+			activation = 0.0;
 			bias = 0.01;
-			wsize = size;
 			error = 0.0;
-			weights = new double[wsize];
-			this.setRandomWeights(wsize);
+			weights = new double[weightCount];
+			this.RandomizeWeights();
 		}
 
-		// Calculate the error on the input layer
-		public void calculateErr(double[] der) {
-			double result = 0.0;
-			for (int x = 0; x < der.Length; x++) {
-				result += (der[x] * weights[x]);
+		// Calculate this neuron's error contribution from the output layer.
+		public void CalculateError(double[] outputErrorDerivatives) {
+			double weightedSum = 0.0;
+			for (int outputIndex = 0; outputIndex < outputErrorDerivatives.Length; outputIndex++) {
+				weightedSum += outputErrorDerivatives[outputIndex] * weights[outputIndex];
 			}
-			error = (result * hactivation * (1 - hactivation));
+			error = weightedSum * activation * (1 - activation);
 		}
 
-		// Change the weights of connected between input and 2 layer
-		public void setWeight(double lrpout, double[] der) {
-			double temp = 0.0;
-			temp = hactivation * lrpout;
-			for (int x = 0; x < der.Length; x++) {
-				weights[x] += (temp * der[x]);
+		// Update the weights between this hidden neuron and the output layer.
+		public void UpdateWeights(double learningRate, double[] outputErrorDerivatives) {
+			double scaledActivation = activation * learningRate;
+			for (int outputIndex = 0; outputIndex < outputErrorDerivatives.Length; outputIndex++) {
+				weights[outputIndex] += scaledActivation * outputErrorDerivatives[outputIndex];
 			}
 		}
 
-		public void setWeight(int pos, double dat) {
-			weights[pos] = dat;
+		public void SetWeight(int outputIndex, double value) {
+			weights[outputIndex] = value;
 		}
 
-		public double getWeight(int outid) {
-			return weights[outid];
+		public double GetWeight(int outputIndex) {
+			return weights[outputIndex];
 		}
 
-		public void setErr(double x) {
-			error = x;
+		public void SetError(double value) {
+			error = value;
 		}
 
-		public double getErr() {
+		public double GetError() {
 			return error;
 		}
 
-		public void setHactivation(double data) {
-			this.hactivation = data;
+		public void SetActivation(double value) {
+			activation = value;
 		}
 
-		public double getHactivation() {
-			return hactivation;
+		public double GetActivation() {
+			return activation;
 		}
 
-		public void setIdno(int x) {
-			idno = x;
+		public void SetId(int id) {
+			this.id = id;
 		}
 
-		public int getIdno() {
-			return idno;
+		public int GetId() {
+			return id;
 		}
 
-		public void setBias(double b) {
-			bias = b;
+		public void SetBias(double value) {
+			bias = value;
 		}
 
-		public double getBias() {
+		public double GetBias() {
 			return bias;
 		}
 
-		// Change the bias of this neuron
-		public void changeBias(double lrpin) {
-			bias += (error * lrpin);
+		// Update this neuron's bias using its error.
+		public void UpdateBias(double learningRate) {
+			bias += error * learningRate;
 		}
 
-		public void setRandomWeights(int size) {
-			for (int x = 0; x < size; x++) {
-				weights[x] = this.randomweight();
+		public void RandomizeWeights() {
+			for (int weightIndex = 0; weightIndex < weights.Length; weightIndex++) {
+				weights[weightIndex] = this.RandomWeight();
 			}
 		}
 
-		private double randomweight() {
-			if (rand == null) {
-				rand = new System.Random();
+		private double RandomWeight() {
+			if (random == null) {
+				random = new Random();
 			}
 
-			int MaxLimit = +1000;
+			int maxLimit = 1000;
+			int minLimit = -1000;
 
-			int MinLimit = -1000;
-
-			double number = (double)(rand.Next(MinLimit, MaxLimit)) / 2000;
-
-			return number;
+			return (double)random.Next(minLimit, maxLimit) / 2000;
 		}
-	}//end of class HNeuron
+	}
 }
