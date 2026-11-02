@@ -7,28 +7,16 @@ namespace Backpropagation {
 	/// </summary>
 	public class HiddenNeuron {
 		private double[] weights;
-		private int id;
 		private double activation;
 		private double bias;
 		private double error;
-		private static Random random;
 
-		public HiddenNeuron() {
-			id = 0;
-			activation = 0.0;
-			bias = this.RandomWeight();
-			error = 0.0;
-			weights = new double[10];
-			this.RandomizeWeights();
-		}
-
-		public HiddenNeuron(int id, int weightCount) {
-			this.id = id;
+		public HiddenNeuron(int weightCount) {
 			activation = 0.0;
 			bias = 0.01;
 			error = 0.0;
 			weights = new double[weightCount];
-			this.RandomizeWeights();
+			RandomizeWeights();
 		}
 
 		// Calculate this neuron's error contribution from the output layer.
@@ -56,10 +44,6 @@ namespace Backpropagation {
 			return weights[outputIndex];
 		}
 
-		public void SetError(double value) {
-			error = value;
-		}
-
 		public double GetError() {
 			return error;
 		}
@@ -70,14 +54,6 @@ namespace Backpropagation {
 
 		public double GetActivation() {
 			return activation;
-		}
-
-		public void SetId(int id) {
-			this.id = id;
-		}
-
-		public int GetId() {
-			return id;
 		}
 
 		public void SetBias(double value) {
@@ -93,21 +69,14 @@ namespace Backpropagation {
 			bias += error * learningRate;
 		}
 
-		public void RandomizeWeights() {
-			for (int weightIndex = 0; weightIndex < weights.Length; weightIndex++) {
-				weights[weightIndex] = this.RandomWeight();
-			}
+		private double RandomWeight() {
+			return Random.Shared.Next(-1000, 1000) / 2000.0;
 		}
 
-		private double RandomWeight() {
-			if (random == null) {
-				random = new Random();
+		private void RandomizeWeights() {
+			for (int weightIndex = 0; weightIndex < weights.Length; weightIndex++) {
+				weights[weightIndex] = RandomWeight();
 			}
-
-			int maxLimit = 1000;
-			int minLimit = -1000;
-
-			return (double)random.Next(minLimit, maxLimit) / 2000;
 		}
 	}
 }

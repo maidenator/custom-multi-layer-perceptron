@@ -6,4 +6,7 @@ obj/
 
 # Editor / IDE
 .vs/
+.idea/
+*.suo
 *.user
+*.DotSettings.user

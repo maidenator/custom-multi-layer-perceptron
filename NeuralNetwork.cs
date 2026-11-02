@@ -7,16 +7,16 @@ namespace Backpropagation {
 	/// The network is trained with backpropagation.
 	/// </summary>
 	public class NeuralNetwork {
-		private InputNeuron[] inputNeurons;
-		private HiddenNeuron[] hiddenNeurons;
-		private OutputNeuron[] outputNeurons;
+		private readonly InputNeuron[] inputNeurons;
+		private readonly HiddenNeuron[] hiddenNeurons;
+		private readonly OutputNeuron[] outputNeurons;
 
 		private const double OutputLearningRate = 0.2;
 		private const double InputLearningRate = 0.15;
 
-		private double[] outputErrors;
-		private double[] outputErrorDerivatives;
-		private double[] desiredOutputs;
+		private readonly double[] outputErrors;
+		private readonly double[] outputErrorDerivatives;
+		private readonly double[] desiredOutputs;
 
 		public NeuralNetwork() {
 			inputNeurons = new InputNeuron[1024];
@@ -25,28 +25,17 @@ namespace Backpropagation {
 			desiredOutputs = new double[10];
 			outputErrors = new double[10];
 			outputErrorDerivatives = new double[10];
-			CreateNeurons(inputNeurons.Length, hiddenNeurons.Length, outputNeurons.Length);
+			CreateNeurons();
 		}
 
-		public NeuralNetwork(int inputCount, int hiddenCount, int outputCount) {
-			inputNeurons = new InputNeuron[inputCount];
-			hiddenNeurons = new HiddenNeuron[hiddenCount];
-			outputNeurons = new OutputNeuron[outputCount];
-
-			outputErrors = new double[outputCount];
-			outputErrorDerivatives = new double[outputCount];
-			desiredOutputs = new double[outputCount];
-			CreateNeurons(inputNeurons.Length, hiddenNeurons.Length, outputNeurons.Length);
-		}
-
-		public void CreateNeurons(int inputCount, int hiddenCount, int outputCount) {
-			for (int inputIndex = 0; inputIndex < inputCount; inputIndex++) {
-				inputNeurons[inputIndex] = new InputNeuron(inputIndex, hiddenCount);
+		private void CreateNeurons() {
+			for (int inputIndex = 0; inputIndex < inputNeurons.Length; inputIndex++) {
+				inputNeurons[inputIndex] = new InputNeuron(hiddenNeurons.Length);
 			}
-			for (int hiddenIndex = 0; hiddenIndex < hiddenCount; hiddenIndex++) {
-				hiddenNeurons[hiddenIndex] = new HiddenNeuron(hiddenIndex, outputCount);
+			for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++) {
+				hiddenNeurons[hiddenIndex] = new HiddenNeuron(outputNeurons.Length);
 			}
-			for (int outputIndex = 0; outputIndex < outputCount; outputIndex++) {
+			for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++) {
 				outputNeurons[outputIndex] = new OutputNeuron(outputIndex);
 			}
 		}
@@ -64,7 +53,7 @@ namespace Backpropagation {
 		}
 
 		// Apply the sigmoid activation function.
-		public double Sigmoid(double value) {
+		private double Sigmoid(double value) {
 			if (value >= 20.00) {
 				value = 32;
 			}
@@ -110,9 +99,9 @@ namespace Backpropagation {
 
 		// Run one training step: a forward pass followed by backpropagation.
 		public void TrainStep() {
-			this.ForwardPass();
-			this.CalculateOutputErrors();
-			this.CalculateOutputErrorDerivatives();
+			ForwardPass();
+			CalculateOutputErrors();
+			CalculateOutputErrorDerivatives();
 
 			// Calculate the error for each hidden neuron.
 			for (int hiddenIndex = 0; hiddenIndex < hiddenNeurons.Length; hiddenIndex++)
@@ -140,18 +129,8 @@ namespace Backpropagation {
 
 		// Run the forward pass through the network.
 		public void ForwardPass() {
-			this.CalculateHiddenActivations();
-			this.CalculateOutputActivations();
-		}
-
-		// Return true when the network has converged.
-		public bool HasConverged() {
-			bool isConverged = true;
-			for (int outputIndex = 0; outputIndex < outputNeurons.Length; outputIndex++) {
-				if ((outputErrors[outputIndex] - outputErrorDerivatives[outputIndex]) != 0)
-					isConverged = false;
-			}
-			return isConverged;
+			CalculateHiddenActivations();
+			CalculateOutputActivations();
 		}
 
 		// Save all weights and biases to a file.

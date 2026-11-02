@@ -7,38 +7,21 @@ namespace Backpropagation {
 	/// </summary>
 	public class InputNeuron {
 		private double[] weights;
-		private int id;
 		private double input;
-		private static Random random;
 
-		public InputNeuron() {
-			id = 0;
-			input = 0;
-			weights = new double[64];
-			this.RandomizeWeights();
-		}
-
-		public InputNeuron(int id, int weightCount) {
-			this.id = id;
+		public InputNeuron(int weightCount) {
 			input = 0;
 			weights = new double[weightCount];
-			this.RandomizeWeights();
+			RandomizeWeights();
 		}
 
 		private double RandomWeight() {
-			if (random == null) {
-				random = new Random();
-			}
-
-			int maxLimit = 1000;
-			int minLimit = -1000;
-
-			return (double)random.Next(minLimit, maxLimit) / 2000;
+			return Random.Shared.Next(-1000, 1000) / 2000.0;
 		}
 
-		public void RandomizeWeights() {
+		private void RandomizeWeights() {
 			for (int weightIndex = 0; weightIndex < weights.Length; weightIndex++) {
-				weights[weightIndex] = this.RandomWeight();
+				weights[weightIndex] = RandomWeight();
 			}
 		}
 
@@ -46,14 +29,6 @@ namespace Backpropagation {
 		public void UpdateWeight(int hiddenIndex, double error, double learningRate) {
 			double scaledError = error * learningRate;
 			weights[hiddenIndex] += scaledError * input;
-		}
-
-		public int GetId() {
-			return id;
-		}
-
-		public void SetId(int id) {
-			this.id = id;
 		}
 
 		public double GetInput() {
