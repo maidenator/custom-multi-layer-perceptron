@@ -19,7 +19,7 @@ namespace Backpropagation {
 		private double[] desiredOutputs;
 
 		public NeuralNetwork() {
-			inputNeurons = new InputNeuron[3072];
+			inputNeurons = new InputNeuron[784];
 			hiddenNeurons = new HiddenNeuron[64];
 			outputNeurons = new OutputNeuron[10];
 			desiredOutputs = new double[10];
