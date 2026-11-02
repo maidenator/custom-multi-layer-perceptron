@@ -8,6 +8,8 @@ namespace Backpropagation {
 	/// </summary>
 	public static class DatasetLoader {
 		private const int ImageSize = 28;
+		private const int TargetSize = 32;
+		private const int Padding = (TargetSize - ImageSize) / 2;
 
 		public static (double[][] inputs, int[] labels) Load(string imagesPath, string labelsPath) {
 			double[][] inputs;
@@ -20,7 +22,7 @@ namespace Backpropagation {
 
 				inputs = new double[imageCount][];
 				for (int i = 0; i < imageCount; i++) {
-					inputs[i] = Normalize(imageReader.ReadBytes(ImageSize * ImageSize));
+					inputs[i] = PadAndNormalize(imageReader.ReadBytes(ImageSize * ImageSize));
 				}
 			}
 
@@ -44,10 +46,13 @@ namespace Backpropagation {
 			return BinaryPrimitives.ReadInt32BigEndian(reader.ReadBytes(4));
 		}
 
-		private static double[] Normalize(byte[] pixels) {
-			double[] result = new double[pixels.Length];
-			for (int i = 0; i < pixels.Length; i++) {
-				result[i] = pixels[i] / 255.0;
+		private static double[] PadAndNormalize(byte[] pixels) {
+			double[] result = new double[TargetSize * TargetSize];
+			for (int y = 0; y < ImageSize; y++) {
+				for (int x = 0; x < ImageSize; x++) {
+					int targetIndex = (y + Padding) * TargetSize + (x + Padding);
+					result[targetIndex] = pixels[y * ImageSize + x] / 255.0;
+				}
 			}
 			return result;
 		}
