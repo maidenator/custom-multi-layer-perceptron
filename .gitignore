@@ -1,1 +1,9 @@
 LEARNING.md
+
+# Build output
+bin/
+obj/
+
+# Editor / IDE
+.vs/
+*.user
