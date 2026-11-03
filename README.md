@@ -21,6 +21,17 @@ digits (28×28 pixels, labels 0–9).
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 
+## Run the GUI
+
+From the same project root folder:
+
+```powershell
+dotnet run --project Gui
+```
+
+The GUI is a separate project, so it needs `--project Gui`. It loads
+`weights/best.txt`, so run the trainer first. Draw a digit and press **Read**.
+
 ## Run the trainer
 
 From the project root folder (the folder containing `Program.cs`):
@@ -91,17 +102,6 @@ with an average F1 score of **0.960**.
 ![Test confusion matrix](logs/test-h64-lr0.3-hlr0.2-e5-s1234-confusion.svg)
 
 Full logs and tuning results are in `logs/`.
-
-## Run the GUI
-
-From the same project root folder:
-
-```powershell
-dotnet run --project Gui
-```
-
-The GUI is a separate project, so it needs `--project Gui`. It loads
-`weights/best.txt`, so run the trainer first. Draw a digit and press **Read**.
 
 ## Files
 
