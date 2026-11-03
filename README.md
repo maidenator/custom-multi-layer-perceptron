@@ -1,7 +1,7 @@
 # Handwritten Digit Recognizer (C#)
 
 A small neural network built from scratch in C# that recognizes handwritten
-digits from MNIST. It uses no machine learning libraries — only the input,
+digits from MNIST. It uses no machine learning libraries, only the input,
 hidden, and output neuron classes in this repository.
 
 The network takes a 32×32 image (1,024 inputs), uses one hidden layer of 64
