@@ -4,6 +4,9 @@ LEARNING.md
 bin/
 obj/
 
+# Scratch checkpoints written during hyperparameter tuning
+weights/tuning/
+
 # Editor / IDE
 .vs/
 .idea/

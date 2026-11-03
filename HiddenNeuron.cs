@@ -6,16 +6,18 @@ namespace Backpropagation {
 	/// an error, and the weights that connect it to each output neuron.
 	/// </summary>
 	public class HiddenNeuron {
-		private double[] weights;
+		private readonly double[] weights;
+		private readonly Random random;
 		private double activation;
 		private double bias;
 		private double error;
 
-		public HiddenNeuron(int weightCount) {
+		public HiddenNeuron(int weightCount, Random random) {
 			activation = 0.0;
 			bias = 0.01;
 			error = 0.0;
 			weights = new double[weightCount];
+			this.random = random;
 			RandomizeWeights();
 		}
 
@@ -70,7 +72,7 @@ namespace Backpropagation {
 		}
 
 		private double RandomWeight() {
-			return Random.Shared.Next(-1000, 1000) / 2000.0;
+			return random.Next(-1000, 1000) / 2000.0;
 		}
 
 		private void RandomizeWeights() {

@@ -10,7 +10,7 @@ namespace Backpropagation {
 	public class MainWindow : Window {
 		private readonly DigitCanvas canvas = new DigitCanvas();
 		private readonly TextBlock result = new TextBlock();
-		private readonly NeuralNetwork network = new NeuralNetwork();
+		private readonly NeuralNetwork network;
 
 		public MainWindow() {
 			Title = "Digit Recognizer";
@@ -50,7 +50,25 @@ namespace Backpropagation {
 
 			Content = layout;
 
-			network.LoadWeights(Path.Combine(AppContext.BaseDirectory, "weights", "epoch-5.txt"));
+			string weightsDirectory = Path.Combine(AppContext.BaseDirectory, "weights");
+			string bestWeights = Path.Combine(weightsDirectory, "best.txt");
+			string fallbackWeights = Path.Combine(weightsDirectory, "epoch-5.txt");
+			string weightsPath = File.Exists(bestWeights) ? bestWeights : fallbackWeights;
+
+			// Infer the hidden-layer size from the checkpoint so the app also works
+			// with models trained using a non-default --hidden value.
+			const int inputCount = 32 * 32;
+			const int outputCount = 10;
+			int valuesPerHiddenNeuron = inputCount + outputCount + 1;
+			int lineCount = File.ReadAllLines(weightsPath).Length;
+			int hiddenCount = (lineCount - outputCount) / valuesPerHiddenNeuron;
+
+			if (hiddenCount <= 0 || hiddenCount * valuesPerHiddenNeuron + outputCount != lineCount) {
+				throw new InvalidDataException($"Unrecognized weights file: {weightsPath}");
+			}
+
+			network = new NeuralNetwork(inputCount, hiddenCount, outputCount, 0.2, 0.15, 1234);
+			network.LoadWeights(weightsPath);
 		}
 
 		private void Read() {

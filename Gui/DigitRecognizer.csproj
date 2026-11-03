@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../weights/epoch-5.txt" Link="weights/epoch-5.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../weights/*.txt" Link="weights/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -6,17 +6,19 @@ namespace Backpropagation {
 	/// that connect it to each hidden neuron.
 	/// </summary>
 	public class InputNeuron {
-		private double[] weights;
+		private readonly double[] weights;
+		private readonly Random random;
 		private double input;
 
-		public InputNeuron(int weightCount) {
+		public InputNeuron(int weightCount, Random random) {
 			input = 0;
 			weights = new double[weightCount];
+			this.random = random;
 			RandomizeWeights();
 		}
 
 		private double RandomWeight() {
-			return Random.Shared.Next(-1000, 1000) / 2000.0;
+			return random.Next(-1000, 1000) / 2000.0;
 		}
 
 		private void RandomizeWeights() {
